@@ -1,7 +1,8 @@
 const HDWalletProvider = require('truffle-hdwallet-provider');
 const Web3=require('web3');
 
-const election = require('../Ethereum/build/Election.json');
+const election = require('./build/Election.json');
+const bill = require('./build/Bill.json')
 
 const provider=new HDWalletProvider(
     'nation diesel shine upgrade feed grit print lock valley leisure river pudding',
@@ -17,12 +18,18 @@ const deploy = async ()=>{
     console.log("Account which is deploying is : "+accounts[0]);
     console.log(await web3.eth.getBalance(accounts[0]));
     
-    const result = await new web3.eth.Contract(JSON.parse(election.interface))
+    const resultElection = await new web3.eth.Contract(JSON.parse(election.interface))
     .deploy({ data:'0x'+ election.bytecode , arguments:['College Election']})
     .send({ from: accounts[0],gas:'1000000' });
     
-    console.log("The contract is deployed to : "+result.options.address);
-    // deployed at : 0x9d57Fd0F923CCEe9eFd7f4715C64f99a4b877E1A
+    console.log("The Election contract is deployed to : "+resultElection.options.address);
+    // deployed at : 0x42a2C35f3C8cF5d1aa6230fF57f7260aCb9E06Be
+
+    const resultBill = await new web3.eth.Contract(JSON.parse(bill.interface))
+    .deploy({data:'0x'+bill.bytecode})
+    .send({from:accounts[0],gas:'1000000',value:'4000000000000000000'});
+    console.log('The Bill contract is deployed to : '+resultBill.options.address);
+    //deployed at : 0x5DEB8eCeBEC7edCD7C72A9FA7329Dc64d82Df11d
 };
 
 deploy();

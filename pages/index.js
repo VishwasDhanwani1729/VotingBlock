@@ -19,7 +19,7 @@ class index extends Component{
     }
     static async getInitialProps(){
         const accounts = await web3.eth.getAccounts();
-        const election = Election('0x9d57Fd0F923CCEe9eFd7f4715C64f99a4b877E1A');
+        const election = Election('0x42a2C35f3C8cF5d1aa6230fF57f7260aCb9E06Be');
         const owner = await election.methods.owner().call();
         const candiadatesCount = await election.methods.totalCandidates().call();
         const votingStatus = await election.methods.state().call();
@@ -35,6 +35,7 @@ class index extends Component{
         return {candidates,owner,candiadatesCount,votingStatus};
     }
     async voting(index,candidate){
+        console.log('voting');
         this.setState({dimmerActive:true,eligibileMsg:false});
         const {votingStatus} = this.props;
         if(votingStatus!='1'){   
@@ -42,10 +43,11 @@ class index extends Component{
             return; //means it is not in voting state only in voting state a person can vote
         }
         const accounts = await web3.eth.getAccounts();
-        const election = Election('0x9d57Fd0F923CCEe9eFd7f4715C64f99a4b877E1A');
+        const election = Election('0x42a2C35f3C8cF5d1aa6230fF57f7260aCb9E06Be');
         const voter = await election.methods.voters(accounts[0]).call();
         if(!voter.authorized){
             //which means voter is not authorized and can't vote
+            console.log('Not Authorized');
             this.setState({eligibileMsg:true,dimmerActive:false});
             return;
         }
@@ -81,7 +83,7 @@ class index extends Component{
     renderCandidates(){
       return (this.props.candidates.map((candidate,index)=>{
             console.log('=>'+index);
-            if(this.state.resultsDeclared){
+            /*if(this.state.resultsDeclared){
                 if(candidate.name==this.state.winner){
                     return (
                         <>
@@ -90,7 +92,7 @@ class index extends Component{
                         </>
                     )
                 }
-            }
+            }*/
                 return <Candidates onClick={()=>this.voting(index,candidate)} key={index} id={index} candidate={candidate}/>
       }));
     }
@@ -98,7 +100,7 @@ class index extends Component{
         if(this.props.votingStatus!='2')return;
         if(this.state.resultsDeclared)return;
         const accounts = await web3.eth.getAccounts();
-        const election = Election('0x9d57Fd0F923CCEe9eFd7f4715C64f99a4b877E1A');
+        const election = Election('0x42a2C35f3C8cF5d1aa6230fF57f7260aCb9E06Be');
         try{
             const winnerName = await election.methods.results().send({
                 from:accounts[0]

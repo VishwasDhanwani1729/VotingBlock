@@ -11,11 +11,14 @@ contract Election{
     string public electionName;
     
     struct Candidate{
-        string name;
+        string partyName;
+        string candidateName;
+        address candidateAddress;
         uint voteCount;
+        string ipfsHash;    //to store logo of candidate
     }
     struct Voter{
-        bool authorized;
+        bool authorized;    //add name field
         bool voted;
         uint votedTo;
     }
@@ -29,6 +32,7 @@ contract Election{
     
     event candidateReceipt(string partyName,uint time);
     event receipt(address voterAddress,uint timeOfVote);
+    event result(string partyName,address canidateAddress,address contractAddress);
     
     enum State {Campaigning,Voting,Result}
     /*  Campaigning - Candidates can register themselves
@@ -37,8 +41,10 @@ contract Election{
     */
     State public state;
     
+    Candidate public winnigParty;
+    address public billContract;
     
-    function Election(string name)public{
+    function Election(string name)public payable{
         owner = msg.sender;
         electionName = name;
         totalCandidates=0;
@@ -57,6 +63,8 @@ contract Election{
         _;
     }
     
+    
+    
     // either allow any one to be a candidate or hand the control to owner
     /*
         candidate should pay some minimal amount to take part in election 
@@ -65,10 +73,33 @@ contract Election{
             candidates.push(Candidate(name,0);
         }
     */
-    function addCandidate(string name) checkState(State.Campaigning)  ownerOnly public{
-        candidates.push(Candidate(name,0));
+    function getBalance()
+    view public returns(uint){
+        return this.balance;
+    }
+    
+    function setDefault()checkState(State.Campaigning) ownerOnly public{
+        address c1=0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2;
+        address c2=0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db;
+        candidates.push(Candidate('Party 1','Candidate 1',c1,0,'image'));
+        candidates.push(Candidate('Party 2','Candidate 2',c2,0,'image'));
+        totalCandidates=2;
+        
+        address v1=0xdD870fA1b7C4700F2BD7f44238821C26f7392148;
+        address v2=0x583031D1113aD414F02576BD6afaBfb302140225;
+        address v3=0x4B0897b0513fdC7C541B6d9D7E929C4e5364D2dB;
+        voters[v1]=Voter(true,true,0);
+        voters[v2]=Voter(true,true,0);
+        voters[v3]=Voter(true,true,0);
+        totalVoters=3;
+        totalVotes=3;
+        
+    }
+    
+    function addCandidate(string partyName,string candidateName,address add,string imageHash) checkState(State.Campaigning)  ownerOnly public{
+        candidates.push(Candidate(partyName,candidateName,add,0,imageHash));
         totalCandidates++;
-        candidateReceipt(name,now);
+        candidateReceipt(partyName,now);
     }
     
     function changeState(uint index) ownerOnly public{  //will change the state from Campaigning to voting and voting to result
@@ -94,22 +125,25 @@ contract Election{
         receipt(msg.sender,now);
     }
     
-    function results() checkState(State.Result) view ownerOnly public returns(string){
-            uint max=0;
-            for(uint i =0 ;i<candidates.length;i++){
-                if(candidates[max].voteCount<candidates[i].voteCount){
-                    max=i;
-                }
-            }            
-            return candidates[max].name;
+    function results() checkState(State.Result) ownerOnly public{
+        uint max=0;
+        for(uint i=0;i<totalCandidates;i++){
+            if(candidates[max].voteCount < candidates[i].voteCount){
+                max=i;
+            }
+        }
+        winnigParty = candidates[max];
+        Bill newBill = (new Bill).value(this.balance)(winnigParty.candidateAddress);
+        billContract=address(newBill);
+        
+        //calling event
+        result(winnigParty.partyName,winnigParty.candidateAddress,billContract);
     }
     function destroy() ownerOnly public{
         selfdestruct(msg.sender);
     }
 }
-
-//Bill contract
-
+//get proposalscount
 contract Bill{
     address public owner;
     struct Bills{
@@ -121,7 +155,7 @@ contract Bill{
     }
     
     Bills[] public bills;
-    enum Status {upVote,downVote}
+    uint public billsCount;
     event billCreationReceipt(string billName,uint timestamp);
     modifier ownerOnly(){
         require(msg.sender==owner);
@@ -135,9 +169,11 @@ contract Bill{
         require(!bills[index].finalized);   //only those bills which are not finalized yet
         _;
     }
-    function Bill()
-    public payable{
-        owner=msg.sender;
+    function Bill(address winnigPartyAddress)
+    payable
+    public{
+        owner=winnigPartyAddress;
+        billsCount=0;
     }
     
     function getBalance()
@@ -148,12 +184,13 @@ contract Bill{
     function proposal(string name,string description) ownerOnly
     public{
         bills.push(Bills(name,description,0,0,false));
+        billsCount++;
         billCreationReceipt(name,now);  //calling event
     }
     
-    function voteBill(uint index,Status vote) billIndex(index) isNotFinalized(index)
+    function voteBill(uint index,uint vote) billIndex(index) isNotFinalized(index)
     public{
-        if(vote==Status.upVote)
+        if(vote==0)
             bills[index].upvotes++;
         bills[index].totalvotes++;
     }

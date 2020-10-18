@@ -1,5 +1,5 @@
 import React,{Component} from 'react';
-import {Modal,Icon,Image,Button,Message} from 'semantic-ui-react';
+import {Modal,Icon,Image,Button,Message,Header} from 'semantic-ui-react';
 import {Router} from '../routes.js';
 import ECOI from './images/ECOI.png';
 class Receipt extends Component{
@@ -14,7 +14,6 @@ class Receipt extends Component{
         const {txHash,address,timestamp} = this.props;
         return(
             <>
-                <div id="element">
                     <Modal
                         centered
                         size="small"
@@ -22,11 +21,12 @@ class Receipt extends Component{
                         open={this.state.open}
                         onClose={this.reload}
                     >
-                        <Modal.Header>Voting Receipt</Modal.Header>
+                    <div id="receiptData">
+                        <Header block size="huge"   content="Voting Receipt"/>
                         <Modal.Content image>
                             <Image size="small" src={ECOI} centered/>
                         </Modal.Content>
-                        <Message header="Thank You for voting" content="Your vote is securely stored on blockchain. Here are your details" size="small"  info style={{paddingLeft:160}} />
+                        <Header block content="Thank You for voting" subheader="Your vote is securely stored on blockchain. Here are your details." color="black" style={{backgroundColor:'Azure',paddingLeft:60}}/>
                         <Modal.Description style={{marginLeft:60,marginBottom:20 }}>
                             <p>
                                 <b>TxHash: </b>
@@ -41,13 +41,23 @@ class Receipt extends Component{
                                 {timestamp===undefined? '--':timestamp}
                             </p>
                         </Modal.Description>
+                        <div></div>
+                        </div>
                         <Modal.Actions>
-                            <Button id="download" onClick="download()" positive>
-                                <Icon name="download"/>
+                            <Button id="downloadReceipt" onClick={()=>{
+                                let ele = document.getElementById('receiptData');
+                                let length="990";
+                                let width="549";
+                                let type="png";
+                                let filename="html2png";
+                                html2canvas(ele).then(function(canvas){
+                                    Canvas2Image.saveAsImage(canvas,length,width,'png');
+                                });
+                            }} positive>
+                                <Icon color="black" name="download"/>
                             </Button>
                         </Modal.Actions>
                     </Modal>
-                </div>
             </>
         );
     }

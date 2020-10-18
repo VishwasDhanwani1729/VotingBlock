@@ -20,7 +20,7 @@ class CandidateForm extends Component {
         this.setState({ errorMessageC:'',loadingC:true,successfullC:false , successfullV:false , errorMessageV:'' });
         try{
             const accounts = await web3.eth.getAccounts();
-            const election = Election('0x9d57Fd0F923CCEe9eFd7f4715C64f99a4b877E1A');
+            const election = Election('0x42a2C35f3C8cF5d1aa6230fF57f7260aCb9E06Be');
             const name=this.state.candidateName;
             await election.methods.addCandidate(name).send({
                 from:accounts[0]
@@ -35,7 +35,7 @@ class CandidateForm extends Component {
         this.setState({ errorMessageV:'',loadingV:true , successfullV:false,successfullC:false , errorMessageC:'' });
         try{
             const accounts = await web3.eth.getAccounts();
-            const election = Election('0x9d57Fd0F923CCEe9eFd7f4715C64f99a4b877E1A');
+            const election = Election('0x42a2C35f3C8cF5d1aa6230fF57f7260aCb9E06Be');
             const address = this.state.voterAddress;
             await election.methods.addVoter(address).send({
                 from:accounts[0]
@@ -60,6 +60,10 @@ class CandidateForm extends Component {
                     <Grid.Column>
                         <Message attached header="Please enter candidate details" />
                         <Form className="attached fluid segment" widths onSubmit={this.submitFormOfCandidate} error={!!this.state.errorMessageC} success={this.state.successfullC}>
+                            <Form.Field>
+                                <label>Party Name</label>
+                                <input/>
+                            </Form.Field>
                             <Form.Field required>
                                 <label>Candidate Name</label>
                                 <input required value={this.state.candidateName} onChange={event=>{this.setState({candidateName:event.target.value})}} />
@@ -68,7 +72,10 @@ class CandidateForm extends Component {
                                 <label>Address</label>
                                 <input required value={this.state.candidateAddress} onChange={event=>{this.setState({candidateAddress:event.target.value})}}/>
                             </Form.Field>
-                            
+                            <Form.Field required>
+                                <label>Upload logo</label>
+                                <input type="file" accept="image/png,image/jpeg"/>
+                            </Form.Field>
                             <Message success header="Successfull🙏" content="candidate registered" />
                             <Message error header="Oops...." content={this.state.errorMessageC} />
                             <Button primary loading={this.state.loadingC}>Add Candidate</Button>

@@ -1,8 +1,42 @@
 import React, { Component } from 'react';
-import {Message,Grid,Button,Icon} from'semantic-ui-react';
+import {Message,Grid,Button,Icon} from 'semantic-ui-react';
+import web3 from '../../Ethereum/web3.js';
+import Bill from '../../Ethereum/bill.js';
+import {Router} from '../../routes.js';
 import Layout from '../../components/billsComponents/Layout.js';
 class Request extends Component{
+    static async getInitialProps(props){
+        
+        return {index : props.query.billIndex}
+    }
+    state={
+        billName:'',
+        description:'',
+        time:'',
+        index:this.props.index
+    }
+    async renderData(){
+        const {index} = this.props;
+        const accounts = await web3.eth.getAccounts();
+        const bill = Bill();
+        const billData=await bill.methods.bills(index).call();
+        this.setState({
+            billName : billData.name,
+            description:billData.proposal
+        });
+    }
+    async vote(voteIndex){
+        //0 - upVote | 1- downVote
+        const {index} = this.props;
+        const accounts = await web3.eth.getAccounts();
+        const bill = Bill();
+        await bill.methods.voteBill(index,voteIndex).send({
+            from:accounts[0]
+        });
+    }
     render(){
+        console.log(this.props.index);
+        this.renderData();
         return(
             <Layout>
                 <Message size="small">
@@ -14,16 +48,17 @@ class Request extends Component{
                 </Message>
                 <Grid columns={2} relaxed="very">
                     <Grid.Column width={10} textAlign="justified">
-                        <b>Bill Name</b>
+                        <b>{this.state.billName}</b>
                         <p>
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Cum laboriosam in eveniet provident optio natus dolorum cumque inventore nostrum accusamus dolores maxime animi, necessitatibus est distinctio recusandae totam nobis atque magni deserunt veniam. Voluptates, aspernatur atque? Dolor at commodi ut in nesciunt vel placeat repellat voluptate. Minus, quisquam est. Sunt maxime natus alias vitae, eum ipsum commodi doloremque nam impedit iure fugit dolore qui quidem recusandae dolor possimus excepturi laudantium ea. Aspernatur aut suscipit voluptates quos ad dignissimos eum molestiae quod natus, quae, placeat laboriosam, repudiandae accusantium nulla error enim. Harum at, qui ipsa totam ducimus accusamus omnis nulla, consequatur consequuntur officia voluptas magni quisquam iure numquam rerum voluptates perferendis! Cupiditate possimus obcaecati nisi aspernatur explicabo, eos in porro consequatur impedit illum qui, molestiae soluta iure, ea repudiandae ut at nobis odit. Quia sapiente voluptates delectus ducimus quas laborum, veniam libero velit suscipit, iure magni molestiae mollitia itaque sed dolore. Eum consequatur, adipisci quibusdam facilis distinctio dolore quidem exercitationem earum ipsam necessitatibus accusantium commodi. Aspernatur consequatur iusto deserunt rem mollitia ipsam, assumenda, neque, perspiciatis minus suscipit et! Voluptates numquam quisquam consequuntur, nihil molestiae ex rerum maxime unde delectus obcaecati. Molestias assumenda suscipit voluptate vero fugit inventore ab, eligendi ipsa reiciendis.
+                            {this.state.description}
                         </p>
                         <Icon size="big" name="time"/>
                     </Grid.Column>
                     <Grid.Column width={6} textAlign="center" verticalAlign="middle">
-                        <Button positive>Up-Vote <Icon name="chevron up"/> </Button>
+                     
+                        <Button positive onClick={()=>this.vote(0)}>Up-Vote <Icon name="chevron up"/> </Button>
                         <div style={{marginTop:20}}></div>
-                        <Button negative>Down-Vote <Icon name="chevron down"/></Button>
+                        <Button negative onClick={()=>this.vote(1)}>Down-Vote <Icon name="chevron down"/></Button>
                     </Grid.Column>
                 </Grid>
             </Layout>

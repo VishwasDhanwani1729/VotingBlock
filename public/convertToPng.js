@@ -1,5 +1,5 @@
-/*document.getElementById("download").addEventListener("click",function(){
-    let ele = $('#element').get(0);
+document.getElementById("downloadReceipt").addEventListener("click",function(){
+    let ele = document.getElementById('receiptData');
     let length="600";
     let width="450";
     let type="png";
@@ -8,4 +8,3 @@
         Canvas2Image.saveAsPNG(canvas,length,width);
     });
 });
-document.getElementById("download").style.border="2px solid red";*/

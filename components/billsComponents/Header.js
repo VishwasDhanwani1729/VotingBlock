@@ -23,15 +23,6 @@ class Header extends Component{
                         />
                     </a>
                 </Link>
-                <Link route='/bills/requests'>
-                    <a>
-                        <Menu.Item
-                            content='Requests'
-                            active={this.state.active === 'requests'}
-                            onClick={this.changeHeader}
-                        />
-                    </a>
-                </Link>
                 <Link route='/bills/transactions'>
                     <a>
                         <Menu.Item

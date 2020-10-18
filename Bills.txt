@@ -1,0 +1,83 @@
+pragma solidity ^0.4.17;
+
+contract Bill{
+    address public owner;
+    struct Bills{
+        string name;
+        string proposal;
+        uint upvotes;
+        uint totalvotes;
+        bool finalized;
+    }
+    
+    Bills[] public bills;
+    enum Status {upVote,downVote}
+    event billCreationReceipt(string billName,uint timestamp);
+    modifier ownerOnly(){
+        require(msg.sender==owner);
+        _;
+    }
+    modifier billIndex(uint index){
+        require(index<bills.length);
+        _;
+    }
+    modifier isNotFinalized(uint index){
+        require(!bills[index].finalized);   //only those bills which are not finalized yet
+        _;
+    }
+    function Bill()
+    public payable{
+        owner=msg.sender;
+    }
+    
+    function getBalance()
+    public view returns(uint){
+        return this.balance;
+    }
+    
+    function proposal(string name,string description) ownerOnly
+    public{
+        bills.push(Bills(name,description,0,0,false));
+        billCreationReceipt(name,now);  //calling event
+    }
+    
+    function voteBill(uint index,Status vote) billIndex(index) isNotFinalized(index)
+    public{
+        if(vote==Status.upVote)
+            bills[index].upvotes++;
+        bills[index].totalvotes++;
+    }
+    
+    function finalizeBill(uint index) billIndex(index) ownerOnly isNotFinalized(index)
+    public{
+        Bills storage bill = bills[index];
+        require(bill.upvotes*2>=bill.totalvotes);
+        bill.finalized=true;
+    }
+    
+    
+    
+    
+    //*********************************************************************************************************
+    /*
+    Voting block would deploy this contract with some money and winning party would be owner
+    and for transactions they have to use this contract(indirect control over tokens)
+    
+    function Bill(address winnigPartyAddress)public payable{
+        owner = winnigPartyAddress;    
+    }
+    */
+    //Transactions done by party
+    struct Transactions{
+        address to;
+        string description;
+        uint valueInEther;
+    }
+    Transactions[] public transactions;
+    function sendTokens(address to,string description,uint value)ownerOnly  //value should be passed in wei
+    public{
+        require(value<=this.balance);
+        transactions.push(Transactions(to,description,value));
+        to.transfer(value);
+    }
+}
