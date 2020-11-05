@@ -11,7 +11,7 @@ class Header extends Component{
     changeHeader=(e,{name})=> this.setState({active:name})
 
     async renderState(){
-        const election = Election('0x42a2C35f3C8cF5d1aa6230fF57f7260aCb9E06Be');
+        const election = Election();
         const stateValue = await election.methods.state().call();
         if(stateValue==='0')
             this.setState({electionState : 'Campaigning'});
@@ -22,7 +22,7 @@ class Header extends Component{
     }
     changeState=async event=>{
         const accounts = await web3.eth.getAccounts();
-        const election = Election('0x42a2C35f3C8cF5d1aa6230fF57f7260aCb9E06Be');
+        const election = Election();
         const owner = await election.methods.owner().call();
         if(owner!=accounts[0])  return; //this means other than owner is trying to change state which is not possible hence return and do nothing
 
@@ -73,7 +73,7 @@ class Header extends Component{
                     </a>
                 </Link>
                 
-                <Link route='/bills'>
+                <Link route={(this.state.electionState=='Result')?'/bills':'/'}>
                     <a>
                         <Menu.Item
                             content="Bills"
@@ -84,12 +84,8 @@ class Header extends Component{
                 </Link>
                 <Menu.Menu position="right">
                     <Menu.Item
-                        content={this.state.electionState}
+                        content={"State - "+this.state.electionState}
                         onClick={this.changeState}
-                    />
-                    <Menu.Item
-                        content="Timer"
-                        disabled
                     />
                 </Menu.Menu>
             </Menu>

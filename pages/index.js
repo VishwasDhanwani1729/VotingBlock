@@ -19,7 +19,7 @@ class index extends Component{
     }
     static async getInitialProps(){
         const accounts = await web3.eth.getAccounts();
-        const election = Election('0x42a2C35f3C8cF5d1aa6230fF57f7260aCb9E06Be');
+        const election = Election();
         const owner = await election.methods.owner().call();
         const candiadatesCount = await election.methods.totalCandidates().call();
         const votingStatus = await election.methods.state().call();
@@ -43,7 +43,7 @@ class index extends Component{
             return; //means it is not in voting state only in voting state a person can vote
         }
         const accounts = await web3.eth.getAccounts();
-        const election = Election('0x42a2C35f3C8cF5d1aa6230fF57f7260aCb9E06Be');
+        const election = Election();
         const voter = await election.methods.voters(accounts[0]).call();
         if(!voter.authorized){
             //which means voter is not authorized and can't vote
@@ -83,42 +83,10 @@ class index extends Component{
     renderCandidates(){
       return (this.props.candidates.map((candidate,index)=>{
             console.log('=>'+index);
-            /*if(this.state.resultsDeclared){
-                if(candidate.name==this.state.winner){
-                    return (
-                        <>
-                            <Message header="Congractulations!!🎉🎉" content="This party has won the election."/>
-                            <Candidates onClick={()=>this.voting(index,candidate)} key={index} id={index} candidate={candidate}/>    
-                        </>
-                    )
-                }
-            }*/
                 return <Candidates onClick={()=>this.voting(index,candidate)} key={index} id={index} candidate={candidate}/>
       }));
     }
-    async checkForResults(){
-        if(this.props.votingStatus!='2')return;
-        if(this.state.resultsDeclared)return;
-        const accounts = await web3.eth.getAccounts();
-        const election = Election('0x42a2C35f3C8cF5d1aa6230fF57f7260aCb9E06Be');
-        try{
-            const winnerName = await election.methods.results().send({
-                from:accounts[0]
-            });
-            await election.methods.changeState(0).send({
-                from:accounts[0]
-            });
-            this.setState({resultsDeclared:true,winner:winnerName});
-            Router.replaceRoute('/');
-        }
-        catch(err)
-        {
-            console.log(err.message);
-        }
-    }
     render(){
-        //this.checkForResults();
-        //console.log(this.state.winner);
         return(
             <Layout>
                 <div style={{marginBottom:20}}></div>

@@ -27,13 +27,9 @@ class Propose extends Component{
         }
         this.setState({billName:'',
         description:'',
-        time:'',
-        success:false,
-        lodaing:false,
-        errorMessage:''});
+        loading:false});
     }
     render(){
-        console.log(this.state.time);
         return(
             <Layout>
                 <Message size="small">
@@ -52,10 +48,6 @@ class Propose extends Component{
                             <Form.Field required>
                                 <label>Proposal</label>
                                 <textarea value={this.state.description} onChange={event=>this.setState({description:event.target.value})}/>
-                            </Form.Field>
-                            <Form.Field width={4}>
-                                <label>Time</label>
-                                <input type="datetime-local" value={this.state.time} onChange={event=>this.setState({time:event.target.value})}/>
                             </Form.Field>
                             <Message success header="Proposal Registered"/>
                             <Message error header="Oops...." content={this.state.errorMessage} />

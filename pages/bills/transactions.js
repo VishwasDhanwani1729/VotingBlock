@@ -3,7 +3,7 @@ import {Grid,Message,Button,Card,Form,Input,Icon} from 'semantic-ui-react';
 import web3 from '../../Ethereum/web3.js';
 import Bill from '../../Ethereum/bill.js';
 import Layout from '../../components/billsComponents/Layout.js';
-import {Link} from '../../routes.js';
+import {Link,Router} from '../../routes.js';
 class Transactions extends Component{
     state={
         balance:'0',
@@ -13,13 +13,24 @@ class Transactions extends Component{
         transferTo:'',
         valueInEther:'',
         description:''
-    }
-    /*
+    } 
     static async getInitialProps(){
         const accounts = await web3.eth.getAccounts();
         const bill = Bill();
-        return{bill,accounts};
-    }*/
+        const transCount = parseInt(await bill.methods.transCount().call());
+        console.log('=>>>'+transCount);
+        let transactions;
+        if(transCount!=0){
+            transactions = await Promise.all(
+                Array(transCount)
+                .fill()
+                .map((el,index)=>{
+                    return bill.methods.transactions(index).call();
+                })
+            );
+        }
+        return {accounts,bill,transactions,transCount}
+    }
     getBalance=async()=>{
         const bill = Bill();
         const balance = await bill.methods.getBalance().call();
@@ -40,23 +51,26 @@ class Transactions extends Component{
             this.setState({errorMessage:err.message});
         }
         this.setState({loading:false});
+        Router.replaceRoute(`/bills/requests/${this.props.index}`);
     }
     renderCards(){
-        return(
-            <>
-            <Card fluid>
-                <Card.Content>
-                    <Card.Header>Transaction Hash</Card.Header>
-                    <Card.Meta>timestamp</Card.Meta>
-                    <Card.Description>
-                        To : Address 
-                        <Link route='https://rinkeby.etherscan.io/tx/0xdef987901e7efb1a5669c76772d5e568d681eb918e972960521e7d1b19e87046'>
-                            <a><Icon name="location arrow"/></a>
-                        </Link>
-                    </Card.Description>
-                </Card.Content>
-            </Card>
-            </>
+        if(this.props.transCount==0)return;
+        return(this.props.transactions.map((trans,index)=>{
+            return <Card fluid>
+                    <Card.Content>
+                        <Card.Header>
+                            {trans.to}
+                            <Link route={'https://rinkeby.etherscan.io/address/'+trans.to}>
+                                <a><Icon name="location arrow"/></a>
+                            </Link>
+                        </Card.Header>
+                        <Card.Meta>{trans.value+' wei'}</Card.Meta>
+                        <Card.Description>
+                            {trans.description}
+                        </Card.Description>
+                    </Card.Content>
+                </Card>
+            })
         );
     }
     render(){
@@ -65,10 +79,6 @@ class Transactions extends Component{
             <Layout>
                 <Grid columns={2} relaxed="very" style={{marginTop:20}}>
                     <Grid.Column width={10} textAlign="justified">
-                        {this.renderCards()}
-                        {this.renderCards()}
-                        {this.renderCards()}
-                        {this.renderCards()}
                         {this.renderCards()}
                     </Grid.Column>
                     <Grid.Column width={6}verticalAlign="middle">

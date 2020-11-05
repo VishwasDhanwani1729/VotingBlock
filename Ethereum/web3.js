@@ -9,7 +9,7 @@ if(typeof window !=='undefined' && typeof window.web3 !=='undefined'){
     // in our case it is 1st one
     // so we would create our own provider
     const provider = new Web3.providers.HttpProvider(
-        'https://rinkeby.infura.io/v3/c8f18dcff88b4eb69b9032f837fb5880'
+        'https://rinkeby.infura.io/v3/7e068491137448ec9a1afe9aca29fab4'
     );
     web3 = new Web3(provider);
     

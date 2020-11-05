@@ -2,11 +2,11 @@ const HDWalletProvider = require('truffle-hdwallet-provider');
 const Web3=require('web3');
 
 const election = require('./build/Election.json');
-const bill = require('./build/Bill.json')
+//const bill = require('./build/Bill.json');
 
 const provider=new HDWalletProvider(
     'nation diesel shine upgrade feed grit print lock valley leisure river pudding',
-    'https://rinkeby.infura.io/v3/c8f18dcff88b4eb69b9032f837fb5880'
+    'https://rinkeby.infura.io/v3/7e068491137448ec9a1afe9aca29fab4'
 );
 
 const web3=new Web3(provider);
@@ -20,16 +20,17 @@ const deploy = async ()=>{
     
     const resultElection = await new web3.eth.Contract(JSON.parse(election.interface))
     .deploy({ data:'0x'+ election.bytecode , arguments:['College Election']})
-    .send({ from: accounts[0],gas:'1000000' });
+    .send({ from: accounts[0],gas:'10000000',value:'1000000000000000000' });
     
     console.log("The Election contract is deployed to : "+resultElection.options.address);
-    // deployed at : 0x42a2C35f3C8cF5d1aa6230fF57f7260aCb9E06Be
+    // deployed at : 0x9c6eA049cd48432BD3a0FaDBb9e0442C28a306af
 
-    const resultBill = await new web3.eth.Contract(JSON.parse(bill.interface))
+  /*  const resultBill = await new web3.eth.Contract(JSON.parse(bill.interface))
     .deploy({data:'0x'+bill.bytecode})
-    .send({from:accounts[0],gas:'1000000',value:'4000000000000000000'});
+    .send({from:accounts[0],gas:'1000000',value:'2000000'});
     console.log('The Bill contract is deployed to : '+resultBill.options.address);
     //deployed at : 0x5DEB8eCeBEC7edCD7C72A9FA7329Dc64d82Df11d
+*/
 };
 
 deploy();

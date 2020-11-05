@@ -1,51 +1,46 @@
 import React, { Component } from 'react';
-import {Card} from 'semantic-ui-react';
+import {Card,Message} from 'semantic-ui-react';
 import {Link} from '../../routes.js';
 import web3 from '../../Ethereum/web3.js';
 import Bill from '../../Ethereum/bill.js';
 import BillsCard from '../../components/billsComponents/BillsCard.js';
 import Layout from '../../components/billsComponents/Layout.js';
+import Election from '../../Ethereum/election.js';
 class index extends Component{
     static async getInitialProps(){
         const accounts = await web3.eth.getAccounts();
+        
+        const election = Election();
+        const contractAdd = await election.methods.billContract().call();
+        const WP = await election.methods.winnigParty().call();
+        let owner='';
+        if(WP!=undefined)
+            owner = WP.candidateAddress;
+
         const bill= Bill();
+        const billCount = await bill.methods.billsCount().call();
         const bills = await Promise.all(
-            Array(3)            // need to modify this, create a variable in bill contract having billCount
+            Array(parseInt(billCount))            // need to modify this, create a variable in bill contract having billCount
                 .fill()
                 .map((element,index)=>{
                     return bill.methods.bills(index).call();
                 })
         );
-        return {accounts,bill,bills};
+        return {accounts,owner,bill,bills,contractAdd};
     }
     rendering(){
         return (this.props.bills.map((aBill,index)=>{
             return <BillsCard key={index} id={index} billName={aBill.name} proposal={aBill.proposal}/>;
         }));
     }
-    renderCards(){
-        const items =[ {
-                header : "Bill Name",
-                meta:"Time",
-                description : (<Link route={`/bills/requests/0`}>
-                <a>View Details</a>
-                </Link>),
-                fluid:true
-            },
-            {
-                header : "Bill Name",
-                meta:"Time",
-                description : (<Link route={`/bills/requests/0`}>
-                <a>View Details</a>
-                </Link>),
-                fluid:true
-            },
-        ];
-        return <Card.Group items={items}/>
-    }
+
     render(){
         return(
             <Layout>
+                <Message visible>
+                    <p>Owner's Address : {this.props.owner}</p>
+                    <p>Contract's Address : {this.props.contractAdd}</p>
+                </Message>
                 {this.rendering()}
             </Layout>
         );

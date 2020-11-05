@@ -80,7 +80,23 @@ contract Election{
     view public returns(uint){
         return this.balance;
     }
-   
+    /*
+    function setDefault()checkState(State.Campaigning) ownerOnly public{
+        address c1=0x1e5bA2c04a8C01853BCcc0023258abdc27EcC731;  //l
+        address c2=0xCcd675C6FA91B06a94FCb64e29023eFB656Aff47;  //2nd l
+        candidates.push(Candidate('Party 1','Candidate 1',c1,0,'image'));
+        candidates.push(Candidate('Party 2','Candidate 2',c2,0,'image'));
+        totalCandidates=2;
+        
+        address v1=0x2f8C6c286989a36d2645384fe002e532F0cdd3bb;  //3rd l
+        address v2=0x219b8b490f5928cB1737be581D18BF0721ADdf23;  //4th l
+        address v3=0x02910Abc6857533f3f798C19BcbEadb86418d0B9;  //5th l
+        voters[v1]=Voter(true,false,0);      
+        voters[v2]=Voter(true,false,0);      
+        voters[v3]=Voter(true,false,0);      
+        totalVoters=3;
+
+    }*/
     
     function addCandidate(string partyName,string candidateName,address add,string imageHash) checkState(State.Campaigning)  ownerOnly public{
         candidates.push(Candidate(partyName,candidateName,add,0,imageHash));
@@ -146,9 +162,9 @@ contract Bill{
     address public owner;
     Transactions[] public transactions;
     Bills[] public bills;
+    mapping(address=>bool) voters;
     uint public billsCount;
     uint public totalVoters;
-    uint public transCount;
     event billCreationReceipt(string billName,uint timestamp);
     
     modifier ownerOnly(){
@@ -164,6 +180,10 @@ contract Bill{
         _;
     }
     
+    modifier notVoted(address sender){
+        require(!voters[sender]);    //if false then it means this person hasn't voted yet
+        _;
+    }
    
     function Bill(address winnigPartyAddress)
     payable
@@ -171,7 +191,6 @@ contract Bill{
         owner=winnigPartyAddress;
         billsCount=0;
         totalVoters=5;
-        transCount=0;
     }
     function getBalance()
     public view returns(uint){
@@ -183,10 +202,11 @@ contract Bill{
         billsCount++;
         billCreationReceipt(name,now);  //calling event
     }
-    function voteBill(uint index,uint vote) billIndex(index) isNotFinalized(index)
+    function voteBill(uint index,uint vote) billIndex(index) isNotFinalized(index) notVoted(msg.sender)
     public{
         if(vote==0)
             bills[index].upvotes++;
+        voters[msg.sender]=true;
     }
     function finalizeBill(uint index) billIndex(index) ownerOnly isNotFinalized(index)
     public{
@@ -200,6 +220,5 @@ contract Bill{
         require(value<=this.balance);
         transactions.push(Transactions(to,description,value));
         to.transfer(value);
-        transCount++;
     }
 }
